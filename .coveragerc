@@ -1,0 +1,51 @@
+[run]
+source = src
+omit =
+    */tests/*
+    */test_*.py
+    */__pycache__/*
+    */venv/*
+    */env/*
+    */site-packages/*
+    */.venv/*
+
+[report]
+precision = 2
+show_missing = True
+skip_covered = False
+sort = Cover
+
+exclude_lines =
+    # Default exclusions
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    @abstractmethod
+    @abc.abstractmethod
+
+    # Defensive programming
+    pass
+
+    # Debugging code
+    if self.debug:
+    if settings.DEBUG
+
+    # Type checking only imports
+    if False:
+
+    # Non-runnable code
+    if 0:
+
+[html]
+directory = htmlcov
+
+[xml]
+output = coverage.xml
+
+[paths]
+source =
+    src/
+    */site-packages/

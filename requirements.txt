@@ -1,0 +1,45 @@
+# Python Dependencies for WBS Creation MCP Server
+
+# Core Framework
+pydantic>=2.5.0,<3.0.0
+pydantic-settings>=2.1.0,<3.0.0
+
+# Google Cloud Platform
+google-cloud-firestore>=2.14.0,<3.0.0
+google-cloud-storage>=2.14.0,<3.0.0
+google-cloud-documentai>=2.24.0,<3.0.0
+google-cloud-logging>=3.8.0,<4.0.0
+
+# Flask (for Cloud Functions)
+flask>=3.0.0,<4.0.0
+functions-framework>=3.5.0,<4.0.0
+
+# Async Support
+aiohttp>=3.9.0,<4.0.0
+asyncio>=3.4.3
+
+# MCP SDK (placeholder - replace with actual MCP SDK when available)
+# mcp-sdk>=1.0.0,<2.0.0
+
+# Utilities
+python-dotenv>=1.0.0,<2.0.0
+pyyaml>=6.0.1,<7.0.0
+
+# Date/Time
+python-dateutil>=2.8.2,<3.0.0
+
+# Testing (dev dependencies)
+pytest>=7.4.0,<8.0.0
+pytest-asyncio>=0.21.0,<1.0.0
+pytest-cov>=4.1.0,<5.0.0
+pytest-mock>=3.12.0,<4.0.0
+
+# Linting and Formatting (dev dependencies)
+black>=23.12.0,<25.0.0
+flake8>=7.0.0,<8.0.0
+mypy>=1.8.0,<2.0.0
+isort>=5.13.0,<6.0.0
+
+# Type Stubs
+types-PyYAML>=6.0.12,<7.0.0
+types-python-dateutil>=2.8.19,<3.0.0

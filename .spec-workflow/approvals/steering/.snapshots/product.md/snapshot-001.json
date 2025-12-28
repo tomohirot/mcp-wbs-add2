@@ -1,0 +1,16 @@
+{
+  "id": "snapshot_1766894505395_44km8um26",
+  "approvalId": "approval_1766894505387_4oud26c8o",
+  "approvalTitle": "Product vision and goals document",
+  "version": 1,
+  "timestamp": "2025-12-28T04:01:45.395Z",
+  "trigger": "initial",
+  "status": "pending",
+  "content": "# Product Overview\n\n## Product Purpose\nこのプロダクトは、プロジェクトマネージャーの業務を支援するためのMCPサーバーです。WBS（Work Breakdown Structure）の新規作成と課題追加を自動化することで、プロジェクト管理の効率化を実現します。テンプレートと新規課題を組み合わせた一括登録、ミーティングで発生したタスク・課題・リスクの自動登録を行います。\n\n## Target Users\n### プライマリユーザー\n- **プロジェクトマネージャー**: プロジェクト全体の進捗管理とタスク管理を担当\n- **開発チームリーダー**: チーム内のタスク割り当てと進捗追跡を実施\n\n### ニーズと課題\n- **手動タスク登録の負担**: WBS作成時に大量のタスクを手動で登録する必要がある\n- **ミーティング後の作業**: 議事録からタスクを抽出して登録する作業が発生する\n- **テンプレートの再利用**: 過去のプロジェクトのWBSテンプレートを効率的に活用したい\n- **複数ツールの統合**: BacklogやNotionなど、複数のプロジェクト管理ツールを統合したい\n\n## Key Features\n\n1. **WBS新規作成機能**: テンプレートURLと個別課題を受け付けて、Backlogに一括登録します。重複チェックを行い、未登録のタスクのみを追加します。\n\n2. **外部サービス統合**: Backlog MCPとNotion MCPを通じて、各種プロジェクト管理ツールと連携します。URLから自動的にサービスを判定し、データを取得します。\n\n3. **ドキュメント処理機能**: URLまたはテキストから階層データを取得し、JSON/Markdownに変換します。Google Cloud Document AIを活用して、多様な形式のファイルからテキストを抽出します。\n\n4. **メタデータ管理**: 取得元ファイル名、URL、更新日、バージョン番号などのメタデータをGoogle Cloud Firestoreで管理し、データ本体はGCS（Google Cloud Storage）に保存します。\n\n5. **マスターデータ設定機能**: プロジェクトから種別（課題、リスク）、カテゴリ（事前準備、要件定義、基本設計、実装、テスト、リリース、納品）、マイルストーン、カスタム属性を自動設定します。\n\n## Business Objectives\n\n- **業務効率化**: プロジェクト立ち上げ時のWBS作成時間を80%削減\n- **データ品質向上**: テンプレートとAI活用により、タスクの抜け漏れを防止\n- **ツール統合**: 複数のプロジェクト管理ツールを統一的なインターフェースで操作可能にする\n- **ナレッジ共有**: 過去のプロジェクトのWBSテンプレートを再利用可能にする\n\n## Success Metrics\n\n- **タスク登録時間の削減率**: 従来の手動登録と比較して80%以上の時間削減\n- **テンプレート再利用率**: プロジェクト立ち上げの70%以上でテンプレートを活用\n- **データ整合性**: Backlog/Notionへの登録成功率99%以上\n- **ユーザー満足度**: プロジェクトマネージャーからのNPS（Net Promoter Score）70以上\n\n## Product Principles\n\n1. **自動化ファースト**: 手動作業を最小限にし、可能な限り自動化を追求します。AIとMCPサーバーの組み合わせで、人間の判断が必要な部分以外は自動処理します。\n\n2. **柔軟性と拡張性**: MCP（Model Context Protocol）を活用することで、新しいプロジェクト管理ツールやサービスとの統合を容易にします。GCP環境でMCPサーバーを構築し、拡張可能なアーキテクチャを維持します。\n\n3. **データの透明性**: すべてのデータ処理にメタデータを付与し、トレーサビリティを確保します。Google Cloud Loggingで処理結果を記録し、問題発生時の原因究明を迅速化します。\n\n## Monitoring & Visibility\n\n- **Dashboard Type**: Google Cloud Console上での監視とログ確認\n- **Real-time Updates**: Google Cloud Loggingによるリアルタイムログ記録\n- **Key Metrics Displayed**:\n  - タスク登録成功率\n  - 処理時間\n  - エラー発生率\n  - 外部サービスAPI呼び出し状況\n- **Sharing Capabilities**: Firestoreからのデータエクスポート、ログのダウンロード機能\n\n## Future Vision\n\n### Potential Enhancements\n\n- **Remote Access**: MCP Server Protocol (SSE)を活用したリモート接続機能の拡充。複数のクライアントから同時にアクセス可能にする。\n\n- **Analytics**:\n  - プロジェクトのタスク完了傾向分析\n  - 過去のWBSデータからの所要時間予測\n  - チーム別のタスク処理効率分析\n\n- **Collaboration**:\n  - マルチプロジェクト対応による組織全体のタスク可視化\n  - テンプレート共有機能によるベストプラクティスの組織内展開\n  - AI による課題・リスクの自動検出と提案機能\n",
+  "fileStats": {
+    "size": 5116,
+    "lines": 77,
+    "lastModified": "2025-12-28T04:00:06.863Z"
+  },
+  "comments": []
+}

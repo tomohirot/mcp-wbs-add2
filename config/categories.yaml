@@ -1,0 +1,31 @@
+# カテゴリ定義
+# WBS作成時に使用される7つのカテゴリ
+
+categories:
+  - name: "事前準備"
+    description: "プロジェクト立ち上げ、環境構築、体制整備"
+    order: 1
+
+  - name: "要件定義"
+    description: "要件のヒアリング、仕様策定、スコープ定義"
+    order: 2
+
+  - name: "基本設計"
+    description: "アーキテクチャ設計、データベース設計、API設計"
+    order: 3
+
+  - name: "実装"
+    description: "コーディング、開発、機能実装"
+    order: 4
+
+  - name: "テスト"
+    description: "単体テスト、結合テスト、品質保証"
+    order: 5
+
+  - name: "リリース"
+    description: "デプロイ、本番環境公開、カットオーバー"
+    order: 6
+
+  - name: "納品"
+    description: "成果物納入、ドキュメント作成、引き継ぎ"
+    order: 7

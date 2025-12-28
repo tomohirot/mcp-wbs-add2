@@ -1,0 +1,11 @@
+# 種別定義
+# Backlogプロジェクトで使用される種別（課題タイプ）
+
+issue_types:
+  - name: "課題"
+    description: "通常のタスク、機能実装、作業項目"
+    color: "#990000"
+
+  - name: "リスク"
+    description: "リスク項目、潜在的な問題、注意事項"
+    color: "#FF9900"

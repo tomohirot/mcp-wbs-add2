@@ -1,0 +1,63 @@
+# アプリケーション設定
+
+app:
+  name: "WBS Creation MCP Server"
+  version: "1.0.0"
+  environment: "production"
+
+# Google Cloud設定
+gcp:
+  project_id: "${GCP_PROJECT_ID}"
+  region: "asia-northeast1"
+
+  # Cloud Functions設定
+  functions:
+    runtime: "python311"
+    memory: "512MB"
+    timeout: 300  # 5分
+    max_instances: 10
+
+  # Firestore設定
+  firestore:
+    database: "(default)"
+    collection_prefix: "wbs_"
+
+  # Cloud Storage設定
+  storage:
+    bucket_name: "${GCS_BUCKET_NAME}"
+    data_prefix: "wbs-data/"
+
+  # Document AI設定
+  document_ai:
+    processor_id: "${DOCUMENT_AI_PROCESSOR_ID}"
+    location: "us"
+
+# Backlog設定
+backlog:
+  space_url: "${BACKLOG_SPACE_URL}"
+  api_key: "${BACKLOG_API_KEY}"
+  timeout: 30  # 秒
+  max_retries: 3
+
+# Notion設定
+notion:
+  api_key: "${NOTION_API_KEY}"
+  api_version: "2022-06-28"
+  timeout: 30  # 秒
+  max_retries: 3
+
+# ロギング設定
+logging:
+  level: "INFO"
+  format: "json"
+  enable_cloud_logging: true
+
+# カスタム属性設定
+custom_fields:
+  - name: "インプット"
+    type: "string"
+    description: "タスクのインプット（前提条件、入力データなど）"
+
+  - name: "ゴール/アウトプット"
+    type: "text"
+    description: "タスクのゴールとアウトプット（成果物、完了条件など）"

@@ -194,7 +194,18 @@ def wbs_create(request: Request) -> Tuple[Response, int]:
         from .mcp.handlers import handle_create_wbs
 
         wbs_service = services["wbs_service"]
-        response = asyncio.run(
+
+        # Cloud Functions環境でイベントループを安全に管理
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_closed():
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+        response = loop.run_until_complete(
             handle_create_wbs(wbs_request, wbs_service, logger)
         )
 

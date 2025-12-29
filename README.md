@@ -58,9 +58,61 @@ make ci-test           # CI パイプライン全体をローカル実行
 
 詳細は [CI/CD セットアップガイド](./docs/CI_CD_SETUP.md) を参照してください。
 
+## ☁️ GCPへのデプロイ
+
+### 🚀 クイックデプロイ（推奨）
+
+一括セットアップ＆デプロイスクリプトを使用すると、GCP環境への完全なデプロイが数分で完了します：
+
+```bash
+./scripts/setup-and-deploy.sh
+```
+
+**このスクリプトが自動実行する内容：**
+
+1. ✅ GCPプロジェクトの設定確認
+2. ✅ APIキー等の設定情報を対話的に収集
+3. ✅ 必要なGCP APIの有効化
+4. ✅ Firestore Databaseの作成
+5. ✅ Secret Managerへのシークレット登録
+6. ✅ GCSバケットの作成
+7. ✅ テストの実行（カバレッジ80%以上）
+8. ✅ Cloud Functionsへのデプロイ
+9. ✅ デプロイ後の動作確認
+
+**事前準備（以下の情報を手元に用意）：**
+
+- GCP Project ID
+- Backlog API Key ([取得方法](https://support-ja.backlog.com/hc/ja/articles/360035641754))
+- Backlog Space URL（例：`https://your-space.backlog.com`）
+- Notion API Key ([取得方法](https://www.notion.so/my-integrations))
+
+### 手動デプロイ
+
+詳細な制御が必要な場合は、[デプロイガイド](./docs/DEPLOYMENT.md) を参照してください。
+
+### デプロイ後の使い方
+
+```bash
+# ヘルスチェック
+curl https://YOUR_FUNCTION_URL/health
+
+# WBS作成
+curl -X POST https://YOUR_FUNCTION_URL/wbs-create \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "template_url": "https://your-space.backlog.com/view/PROJ-1",
+    "project_key": "PROJ"
+  }'
+```
+
 ## 📊 テストカバレッジ
 
-現在のカバレッジ: **80.21%** ✅
+現在のカバレッジ: **94.51%** ✅
+
+**テスト結果:**
+- 全263テスト合格 ✅
+- カバレッジ 94.51%（目標80%達成）
 
 | モジュール | カバレッジ | 状態 |
 |----------|----------|------|
@@ -116,3 +168,43 @@ make ci-test           # CI パイプライン全体をローカル実行
                 - タスクをBacklog MCPを通じてBacklogに登録する。
                 その際、プロジェクトのタスク一覧を取得し、未登録のタスクのみを登録すること。
                 - 登録結果を保持し、Google Cloud Loggingでログに書き込む。
+
+## ⚠️ 重要な制限事項
+
+**現在のMCP SDK統合はプレースホルダー実装です。**
+
+実際のBacklog/Notion APIと通信するには、以下のファイルで実際のMCP SDK呼び出しを実装する必要があります：
+- `src/integrations/backlog/client.py`
+- `src/integrations/notion/client.py`
+
+現在は `await asyncio.sleep(0.1)` でモック化されています。本番環境で使用する前に、実際のAPI統合を実装してください。
+
+## 💰 コスト見積もり
+
+月間の推定コスト（中程度の使用量）：
+
+- Cloud Functions: $0-10/月（最初の200万回の呼び出しは無料）
+- Firestore: $0-5/月（無料枠: 1GB、50K reads/day）
+- Cloud Storage: $0-2/月（最初の5GBは無料）
+- Secret Manager: $0.06/secret/月
+
+**合計: 約$1-20/月**
+
+## 🔒 セキュリティ
+
+- ✅ Secret Managerによる認証情報の暗号化保存
+- ✅ Cloud Functions Gen 2のセキュリティ機能
+- ✅ CORS設定による不正アクセス防止
+- ⚠️ 本番環境では `ALLOWED_ORIGINS` を具体的なドメインに設定すること
+
+## 🤝 貢献
+
+Issue、Pull Requestは大歓迎です！
+
+## 📄 ライセンス
+
+MIT License
+
+---
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)

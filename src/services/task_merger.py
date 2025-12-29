@@ -124,13 +124,13 @@ class TaskMerger:
                     update={"category": detected_category}
                 )
                 self.logger.debug(
-                    f"Auto-detected category for '{task.title}': {detected_category.value}"
+                    f"Auto-detected category for '{task.title}': {detected_category}"
                 )
             else:
                 # カテゴリが既に設定されている場合はそのまま使用
                 categorized_task = task
                 self.logger.debug(
-                    f"Using existing category for '{task.title}': {task.category.value}"
+                    f"Using existing category for '{task.title}': {task.category}"
                 )
 
             categorized_tasks.append(categorized_task)

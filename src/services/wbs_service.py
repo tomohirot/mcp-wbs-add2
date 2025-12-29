@@ -145,12 +145,12 @@ class WBSService:
             # === Step 2: URL解析 ===
             self.logger.info("Step 2: Parsing template URL")
             service_type = self.url_parser.parse_service_type(template_url)
-            self.logger.info(f"Detected service type: {service_type.value}")
+            self.logger.info(f"Detected service type: {service_type}")
 
             # === Step 3: MCPクライアント作成 ===
             self.logger.info("Step 3: Creating MCP client")
             mcp_client = self.mcp_factory.create_client(service_type)
-            self.logger.info(f"Created {service_type.value} MCP client")
+            self.logger.info(f"Created {service_type} MCP client")
 
             # === Step 4: テンプレート取得 ===
             self.logger.info("Step 4: Fetching template data")

@@ -39,38 +39,61 @@ def _initialize_services() -> dict:
 
     config = get_config()
 
-    # TODO: 実際のサービスインスタンスを初期化
+    # 実際のサービスインスタンスを初期化
     # 各サービスを依存性注入パターンで構築
-    #
-    # 実装例:
-    # from .processors.url_parser import URLParser
-    # from .processors.document_processor import DocumentProcessor
-    # from .processors.converter import Converter
-    # from .services.category_detector import CategoryDetector
-    # from .services.task_merger import TaskMerger
-    # from .services.master_service import MasterService
-    # from .services.wbs_service import WBSService
-    # from .integrations.mcp_factory import MCPFactory
-    # from .integrations.backlog.client import BacklogMCPClient
-    # from .storage import StorageManager
-    #
-    # # 依存性を順に構築
-    # url_parser = URLParser()
-    # category_detector = CategoryDetector()
-    # converter = Converter()
-    # # ... 他のサービスも構築
-    #
-    # wbs_service = WBSService(
-    #     master_service=master_service,
-    #     url_parser=url_parser,
-    #     ...
-    # )
+    from .integrations.mcp_factory import MCPFactory
+    from .processors.converter import Converter
+    from .processors.document_processor import DocumentProcessor
+    from .processors.url_parser import URLParser
+    from .services.category_detector import CategoryDetector
+    from .services.master_service import MasterService
+    from .services.task_merger import TaskMerger
+    from .services.wbs_service import WBSService
+    from .storage import StorageManager
 
-    # プレースホルダー実装
+    # 依存性を順に構築
+    _logger.info("Initializing processors...")
+    url_parser = URLParser()
+    document_processor = DocumentProcessor(logger=_logger)
+    converter = Converter(logger=_logger)
+    category_detector = CategoryDetector()
+
+    _logger.info("Initializing storage manager...")
+    storage_manager = StorageManager(
+        project_id=config.gcp_project_id,
+        bucket_name=config.gcs_bucket_name,
+        logger=_logger,
+    )
+
+    _logger.info("Initializing MCP factory...")
+    mcp_factory = MCPFactory(logger=_logger)
+
+    _logger.info("Initializing task merger...")
+    task_merger = TaskMerger(
+        category_detector=category_detector, logger=_logger
+    )
+
+    _logger.info("Initializing master service...")
+    master_service = MasterService(
+        storage=storage_manager, logger=_logger
+    )
+
+    _logger.info("Initializing WBS service...")
+    wbs_service = WBSService(
+        master_service=master_service,
+        url_parser=url_parser,
+        document_processor=document_processor,
+        converter=converter,
+        task_merger=task_merger,
+        mcp_factory=mcp_factory,
+        storage=storage_manager,
+        logger=_logger,
+    )
+
     _services = {
         "logger": _logger,
         "config": config,
-        "wbs_service": None,  # 実際のWBSServiceインスタンスに置き換え
+        "wbs_service": wbs_service,
     }
 
     _logger.info("Services initialized successfully")
@@ -141,7 +164,7 @@ def wbs_create(request: Request) -> Tuple[Response, int]:
 
         # Pydanticスキーマでバリデーション
         try:
-            CreateWBSRequest(**request_data)
+            wbs_request = CreateWBSRequest(**request_data)
         except Exception as e:
             logger.warning(f"Request validation failed: {str(e)}")
             error_response = {
@@ -150,23 +173,14 @@ def wbs_create(request: Request) -> Tuple[Response, int]:
             }
             return Response(json.dumps(error_response), status=400, headers=headers)
 
-        # TODO: ハンドラーを呼び出し
-        # 実装例:
-        # import asyncio
-        # wbs_service = services["wbs_service"]
-        # response = asyncio.run(
-        #     handle_create_wbs(wbs_request, wbs_service, logger)
-        # )
+        # ハンドラーを呼び出し
+        import asyncio
 
-        # プレースホルダーレスポンス
-        response = CreateWBSResponse(
-            success=True,
-            registered_tasks=[],
-            skipped_tasks=[],
-            metadata_id="placeholder",
-            master_data_created=0,
-            total_registered=0,
-            total_skipped=0,
+        from .mcp.handlers import handle_create_wbs
+
+        wbs_service = services["wbs_service"]
+        response = asyncio.run(
+            handle_create_wbs(wbs_request, wbs_service, logger)
         )
 
         logger.info("WBS creation completed successfully")

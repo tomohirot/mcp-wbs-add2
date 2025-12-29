@@ -1,0 +1,15 @@
+# Copy this file to terraform.tfvars and fill in your values
+# DO NOT commit terraform.tfvars to version control
+
+project_id     = "your-gcp-project-id"
+region         = "asia-northeast1"
+environment    = "production"
+function_name  = "wbs-creation-service"
+
+# CORS origins (comma-separated, use "*" for development only)
+allowed_origins = "https://yourdomain.com,https://app.yourdomain.com"
+
+# API Keys - obtain from respective services
+backlog_api_key   = "your-backlog-api-key"
+backlog_space_url = "https://your-space.backlog.com"
+notion_api_key    = "secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

@@ -3,7 +3,7 @@ Unit tests for main Cloud Functions entry point
 """
 
 import json
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from flask import Request
@@ -14,26 +14,55 @@ from src.main import _initialize_services, health_check, wbs_create
 class TestInitializeServices:
     """Tests for _initialize_services function"""
 
-    def test_initialize_services_returns_dict(self):
+    @patch("src.processors.document_processor.documentai")
+    @patch("src.storage.firestore_client.firestore")
+    @patch("src.storage.gcs_client.storage")
+    def test_initialize_services_returns_dict(
+        self, mock_gcs_storage, mock_firestore, mock_documentai
+    ):
         """Test that _initialize_services returns services dict"""
-        with patch("src.main._services", None):
-            with patch("src.main._logger", None):
-                services = _initialize_services()
+        # Reset global variables to force re-initialization
+        import src.main
 
-                assert isinstance(services, dict)
-                assert "logger" in services
-                assert "config" in services
-                assert "wbs_service" in services
+        src.main._services = None
+        src.main._logger = None
 
-    def test_initialize_services_caches_result(self):
+        # Mock GCP clients to avoid authentication errors
+        mock_documentai.DocumentProcessorServiceClient.return_value = Mock()
+        mock_firestore.Client.return_value = Mock()
+        mock_gcs_storage.Client.return_value = Mock()
+
+        # Call _initialize_services
+        services = _initialize_services()
+
+        assert isinstance(services, dict)
+        assert "logger" in services
+        assert "config" in services
+        assert "wbs_service" in services
+
+        # Verify the services are not None
+        assert services["logger"] is not None
+        assert services["config"] is not None
+        assert services["wbs_service"] is not None
+
+    @patch("src.processors.document_processor.documentai")
+    @patch("src.storage.firestore_client.firestore")
+    @patch("src.storage.gcs_client.storage")
+    def test_initialize_services_caches_result(
+        self, mock_gcs_storage, mock_firestore, mock_documentai
+    ):
         """Test that _initialize_services caches services"""
-        with patch("src.main._services", None):
-            with patch("src.main._logger", None):
-                services1 = _initialize_services()
-                services2 = _initialize_services()
+        # Mock GCP clients to avoid authentication errors
+        mock_documentai.DocumentProcessorServiceClient.return_value = Mock()
+        mock_firestore.Client.return_value = Mock()
+        mock_gcs_storage.Client.return_value = Mock()
 
-                # Should return the same instance (cached)
-                assert services1 is services2
+        # Call _initialize_services twice
+        services1 = _initialize_services()
+        services2 = _initialize_services()
+
+        # Should return the same instance (cached)
+        assert services1 is services2
 
 
 class TestHealthCheck:
@@ -75,8 +104,17 @@ class TestHealthCheck:
 class TestWBSCreate:
     """Tests for wbs_create endpoint"""
 
-    def test_wbs_create_options_request(self):
+    @patch("src.main._initialize_services")
+    def test_wbs_create_options_request(self, mock_init):
         """Test OPTIONS request (CORS preflight)"""
+        # Mock services (not used in OPTIONS)
+        mock_logger = Mock()
+        mock_init.return_value = {
+            "logger": mock_logger,
+            "config": Mock(),
+            "wbs_service": Mock(),
+        }
+
         mock_request = Mock(spec=Request)
         mock_request.method = "OPTIONS"
         mock_request.path = "/wbs-create"
@@ -87,8 +125,17 @@ class TestWBSCreate:
         assert response.headers.get("Access-Control-Allow-Origin") == "*"
         assert "POST" in response.headers.get("Access-Control-Allow-Methods")
 
-    def test_wbs_create_get_method_not_allowed(self):
+    @patch("src.main._initialize_services")
+    def test_wbs_create_get_method_not_allowed(self, mock_init):
         """Test GET request returns 405 Method Not Allowed"""
+        # Mock services
+        mock_logger = Mock()
+        mock_init.return_value = {
+            "logger": mock_logger,
+            "config": Mock(),
+            "wbs_service": Mock(),
+        }
+
         mock_request = Mock(spec=Request)
         mock_request.method = "GET"
         mock_request.path = "/wbs-create"
@@ -100,8 +147,17 @@ class TestWBSCreate:
         assert response_data["success"] is False
         assert "GET" in response_data["error_message"]
 
-    def test_wbs_create_invalid_json(self):
+    @patch("src.main._initialize_services")
+    def test_wbs_create_invalid_json(self, mock_init):
         """Test invalid JSON returns 400 Bad Request"""
+        # Mock services
+        mock_logger = Mock()
+        mock_init.return_value = {
+            "logger": mock_logger,
+            "config": Mock(),
+            "wbs_service": Mock(),
+        }
+
         mock_request = Mock(spec=Request)
         mock_request.method = "POST"
         mock_request.path = "/wbs-create"
@@ -114,8 +170,17 @@ class TestWBSCreate:
         assert response_data["success"] is False
         assert "Invalid JSON" in response_data["error_message"]
 
-    def test_wbs_create_validation_error(self):
+    @patch("src.main._initialize_services")
+    def test_wbs_create_validation_error(self, mock_init):
         """Test request validation error returns 400"""
+        # Mock services
+        mock_logger = Mock()
+        mock_init.return_value = {
+            "logger": mock_logger,
+            "config": Mock(),
+            "wbs_service": Mock(),
+        }
+
         mock_request = Mock(spec=Request)
         mock_request.method = "POST"
         mock_request.path = "/wbs-create"
@@ -133,8 +198,28 @@ class TestWBSCreate:
         assert response_data["success"] is False
         assert "validation error" in response_data["error_message"]
 
-    def test_wbs_create_valid_request_returns_200(self):
+    @patch("src.mcp.handlers.handle_create_wbs")
+    @patch("src.main._initialize_services")
+    def test_wbs_create_valid_request_returns_200(self, mock_init, mock_handler):
         """Test valid request returns 200 OK"""
+        # Mock services
+        mock_logger = Mock()
+        mock_wbs_service = Mock()
+        mock_init.return_value = {
+            "logger": mock_logger,
+            "config": Mock(),
+            "wbs_service": mock_wbs_service,
+        }
+
+        # Mock successful response from handler
+        from src.mcp.schemas import CreateWBSResponse
+
+        mock_response = CreateWBSResponse(
+            success=True, registered_tasks=[], failed_tasks=[]
+        )
+        # handle_create_wbs is async, so we need AsyncMock
+        mock_handler.return_value = mock_response
+
         mock_request = Mock(spec=Request)
         mock_request.method = "POST"
         mock_request.path = "/wbs-create"
@@ -151,8 +236,28 @@ class TestWBSCreate:
         response_data = json.loads(response.get_data(as_text=True))
         assert response_data["success"] is True
 
-    def test_wbs_create_valid_request_with_new_tasks(self):
+    @patch("src.mcp.handlers.handle_create_wbs")
+    @patch("src.main._initialize_services")
+    def test_wbs_create_valid_request_with_new_tasks(self, mock_init, mock_handler):
         """Test valid request with new_tasks_text"""
+        # Mock services
+        mock_logger = Mock()
+        mock_wbs_service = Mock()
+        mock_init.return_value = {
+            "logger": mock_logger,
+            "config": Mock(),
+            "wbs_service": mock_wbs_service,
+        }
+
+        # Mock successful response from handler
+        from src.mcp.schemas import CreateWBSResponse
+
+        mock_response = CreateWBSResponse(
+            success=True, registered_tasks=[], failed_tasks=[]
+        )
+        # handle_create_wbs is async, so we need AsyncMock
+        mock_handler.return_value = mock_response
+
         mock_request = Mock(spec=Request)
         mock_request.method = "POST"
         mock_request.path = "/wbs-create"
@@ -169,8 +274,28 @@ class TestWBSCreate:
         assert response.status_code == 200
         assert response.headers.get("Content-Type") == "application/json"
 
-    def test_wbs_create_cors_headers(self):
+    @patch("src.mcp.handlers.handle_create_wbs")
+    @patch("src.main._initialize_services")
+    def test_wbs_create_cors_headers(self, mock_init, mock_handler):
         """Test CORS headers are set correctly"""
+        # Mock services
+        mock_logger = Mock()
+        mock_wbs_service = Mock()
+        mock_init.return_value = {
+            "logger": mock_logger,
+            "config": Mock(),
+            "wbs_service": mock_wbs_service,
+        }
+
+        # Mock successful response from handler
+        from src.mcp.schemas import CreateWBSResponse
+
+        mock_response = CreateWBSResponse(
+            success=True, registered_tasks=[], failed_tasks=[]
+        )
+        # handle_create_wbs is async, so we need AsyncMock
+        mock_handler.return_value = mock_response
+
         mock_request = Mock(spec=Request)
         mock_request.method = "POST"
         mock_request.path = "/wbs-create"

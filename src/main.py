@@ -55,13 +55,20 @@ def _initialize_services() -> dict:
     _logger.info("Initializing processors...")
     url_parser = URLParser()
     document_processor = DocumentProcessor(logger=_logger)
-    converter = Converter(logger=_logger)
+    converter = Converter()
     category_detector = CategoryDetector()
+
+    _logger.info("Initializing storage clients...")
+    from .storage.firestore_client import FirestoreClient
+    from .storage.gcs_client import GCSClient
+
+    firestore_client = FirestoreClient(logger=_logger)
+    gcs_client = GCSClient(logger=_logger)
 
     _logger.info("Initializing storage manager...")
     storage_manager = StorageManager(
-        project_id=config.gcp_project_id,
-        bucket_name=config.gcs_bucket_name,
+        firestore_client=firestore_client,
+        gcs_client=gcs_client,
         logger=_logger,
     )
 
@@ -74,19 +81,27 @@ def _initialize_services() -> dict:
     )
 
     _logger.info("Initializing master service...")
+    # MasterService requires a backlog_client
+    from .integrations.backlog.client import BacklogMCPClient
+    backlog_client = BacklogMCPClient(
+        api_key=config.backlog_api_key,
+        space_url=config.backlog_space_url,
+        logger=_logger
+    )
     master_service = MasterService(
-        storage=storage_manager, logger=_logger
+        backlog_client=backlog_client, logger=_logger
     )
 
     _logger.info("Initializing WBS service...")
     wbs_service = WBSService(
         master_service=master_service,
         url_parser=url_parser,
+        mcp_factory=mcp_factory,
         document_processor=document_processor,
         converter=converter,
         task_merger=task_merger,
-        mcp_factory=mcp_factory,
-        storage=storage_manager,
+        backlog_client=backlog_client,
+        storage_manager=storage_manager,
         logger=_logger,
     )
 

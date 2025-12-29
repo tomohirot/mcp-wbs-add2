@@ -1,7 +1,7 @@
 # WBS作成 MCP サーバー
 
 [![Test Suite](https://github.com/tomohirot/mcp-wbs-add2/actions/workflows/test.yml/badge.svg)](https://github.com/tomohirot/mcp-wbs-add2/actions/workflows/test.yml)
-[![Coverage](https://img.shields.io/badge/coverage-80.21%25-brightgreen)](./htmlcov/index.html)
+[![codecov](https://codecov.io/gh/tomohirot/mcp-wbs-add2/branch/main/graph/badge.svg)](https://codecov.io/gh/tomohirot/mcp-wbs-add2)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 

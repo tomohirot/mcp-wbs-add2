@@ -257,6 +257,12 @@ PR コメント投稿
 
 ## 📚 関連ドキュメント
 
+### プロジェクト内ドキュメント
+- [Codecovセットアップ](./CODECOV_SETUP.md) - カバレッジレポート統合ガイド
+- [セットアップガイド](./setup.md) - 開発環境のセットアップ
+- [APIドキュメント](./api.md) - API仕様
+
+### 外部ドキュメント
 - [pytest ドキュメント](https://docs.pytest.org/)
 - [coverage.py ドキュメント](https://coverage.readthedocs.io/)
 - [GitHub Actions ドキュメント](https://docs.github.com/ja/actions)

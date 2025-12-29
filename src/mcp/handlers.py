@@ -110,10 +110,18 @@ def _task_to_summary(task: Task) -> TaskSummary:
     Returns:
         TaskSummaryモデル
     """
+    # CategoryEnumをstr値に変換
+    if task.category:
+        # CategoryEnumの場合は.valueで日本語を取得
+        # (CategoryEnumはstr, Enumを継承しているが、strだと"CategoryEnum.X"になる)
+        category_str = task.category.value if hasattr(task.category, 'value') else str(task.category)
+    else:
+        category_str = "未分類"
+
     return TaskSummary(
         title=task.title,
         description=task.description,
-        category=task.category.value if task.category else "未分類",
+        category=category_str,
         priority=task.priority,
         assignee=task.assignee,
     )

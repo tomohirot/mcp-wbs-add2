@@ -4,11 +4,17 @@ MCPクライアントファクトリ
 サービスタイプに応じたMCPクライアントを生成。
 """
 
-from typing import Union
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Union
 
 from ..models.enums import ServiceType
 from ..utils.config import get_config
 from ..utils.logger import Logger
+
+if TYPE_CHECKING:
+    from .backlog.client import BacklogMCPClient
+    from .notion.client import NotionMCPClient
 
 
 class MCPFactory:
@@ -28,7 +34,7 @@ class MCPFactory:
 
     def create_client(
         self, service_type: ServiceType
-    ) -> Union["BacklogMCPClient", "NotionMCPClient"]:
+    ) -> Union[BacklogMCPClient, NotionMCPClient]:
         """サービスタイプに応じたMCPクライアントを生成
 
         Args:

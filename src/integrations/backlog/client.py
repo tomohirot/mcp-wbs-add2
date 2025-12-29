@@ -151,7 +151,7 @@ class BacklogMCPClient:
         self.logger.info(f"Getting tasks for project: {project_key}")
 
         # プロジェクトの課題を取得
-        response = await self._call_mcp(
+        _ = await self._call_mcp(
             "GET",
             "/api/v2/issues",
             params={"projectId[]": project_key, "count": 100},  # 最大取得件数
@@ -203,7 +203,7 @@ class BacklogMCPClient:
                     task_data["assigneeId"] = task.assignee
 
                 # MCP経由でタスク作成
-                response = await self._call_mcp(
+                _ = await self._call_mcp(
                     "POST", "/api/v2/issues", data=task_data
                 )
 
@@ -236,7 +236,7 @@ class BacklogMCPClient:
         """
         self.logger.info(f"Getting issue types for project: {project_key}")
 
-        response = await self._call_mcp(
+        _ = await self._call_mcp(
             "GET", f"/api/v2/projects/{project_key}/issueTypes"
         )
 
@@ -261,7 +261,7 @@ class BacklogMCPClient:
         """
         self.logger.info(f"Creating issue type '{name}' in project: {project_key}")
 
-        response = await self._call_mcp(
+        _ = await self._call_mcp(
             "POST",
             f"/api/v2/projects/{project_key}/issueTypes",
             data={"name": name, "color": "#990000"},  # デフォルト色
@@ -289,7 +289,7 @@ class BacklogMCPClient:
         """
         self.logger.info(f"Getting categories for project: {project_key}")
 
-        response = await self._call_mcp(
+        _ = await self._call_mcp(
             "GET", f"/api/v2/projects/{project_key}/categories"
         )
 
@@ -314,7 +314,7 @@ class BacklogMCPClient:
         """
         self.logger.info(f"Creating category '{name}' in project: {project_key}")
 
-        response = await self._call_mcp(
+        _ = await self._call_mcp(
             "POST", f"/api/v2/projects/{project_key}/categories", data={"name": name}
         )
 
@@ -338,7 +338,7 @@ class BacklogMCPClient:
         """
         self.logger.info(f"Getting custom fields for project: {project_key}")
 
-        response = await self._call_mcp(
+        _ = await self._call_mcp(
             "GET", f"/api/v2/projects/{project_key}/customFields"
         )
 
@@ -381,7 +381,7 @@ class BacklogMCPClient:
         if field.applicable_issue_types:
             field_data["applicableIssueTypes"] = field.applicable_issue_types
 
-        response = await self._call_mcp(
+        _ = await self._call_mcp(
             "POST", f"/api/v2/projects/{project_key}/customFields", data=field_data
         )
 

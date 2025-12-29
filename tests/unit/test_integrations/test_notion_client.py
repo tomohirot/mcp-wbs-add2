@@ -250,7 +250,8 @@ class TestGetPage:
     @pytest.mark.asyncio
     async def test_get_page(self, notion_client):
         """Test getting a page"""
-        with patch.object(notion_client, "_call_mcp", new_callable=AsyncMock):
+        with patch.object(notion_client, "_call_mcp", new_callable=AsyncMock) as mock_call:
+            mock_call.return_value = {}  # Empty response triggers placeholder
             page = await notion_client.get_page("test-page-id")
 
             assert isinstance(page, NotionPage)
@@ -263,7 +264,8 @@ class TestGetBlocks:
     @pytest.mark.asyncio
     async def test_get_blocks(self, notion_client):
         """Test getting blocks"""
-        with patch.object(notion_client, "_call_mcp", new_callable=AsyncMock):
+        with patch.object(notion_client, "_call_mcp", new_callable=AsyncMock) as mock_call:
+            mock_call.return_value = {"results": []}  # Empty results
             blocks = await notion_client.get_blocks("test-block-id")
 
             assert isinstance(blocks, list)
@@ -275,7 +277,8 @@ class TestGetDatabase:
     @pytest.mark.asyncio
     async def test_get_database(self, notion_client):
         """Test getting a database"""
-        with patch.object(notion_client, "_call_mcp", new_callable=AsyncMock):
+        with patch.object(notion_client, "_call_mcp", new_callable=AsyncMock) as mock_call:
+            mock_call.return_value = {}  # Empty response triggers placeholder
             database = await notion_client.get_database("test-db-id")
 
             assert isinstance(database, NotionDatabase)
@@ -291,11 +294,12 @@ class TestQueryDatabase:
         with patch.object(
             notion_client, "_call_mcp", new_callable=AsyncMock
         ) as mock_call:
-            mock_call.return_value = {"results": []}
+            mock_call.return_value = {"results": []}  # Empty results list
 
             pages = await notion_client.query_database("test-db-id")
 
             assert isinstance(pages, list)
+            assert len(pages) == 0
             mock_call.assert_called_once()
 
     @pytest.mark.asyncio
@@ -304,7 +308,7 @@ class TestQueryDatabase:
         with patch.object(
             notion_client, "_call_mcp", new_callable=AsyncMock
         ) as mock_call:
-            mock_call.return_value = {"results": []}
+            mock_call.return_value = {"results": []}  # Empty results list
 
             filter_conditions = {"property": "Status", "select": {"equals": "Active"}}
             await notion_client.query_database("test-db-id", filter_conditions)
@@ -320,7 +324,7 @@ class TestQueryDatabase:
         with patch.object(
             notion_client, "_call_mcp", new_callable=AsyncMock
         ) as mock_call:
-            mock_call.return_value = {"results": []}
+            mock_call.return_value = {"results": []}  # Empty results list
 
             sorts = [{"property": "Name", "direction": "ascending"}]
             await notion_client.query_database("test-db-id", sorts=sorts)
@@ -336,7 +340,7 @@ class TestQueryDatabase:
         with patch.object(
             notion_client, "_call_mcp", new_callable=AsyncMock
         ) as mock_call:
-            mock_call.return_value = {"results": []}
+            mock_call.return_value = {"results": []}  # Empty results list
 
             # Request more than 100
             await notion_client.query_database("test-db-id", page_size=200)

@@ -151,7 +151,8 @@ class NotionMCPClient:
 
             except Exception as db_error:
                 self.logger.error(
-                    f"Failed to fetch data from URL {url}: page error={str(page_error)}, db error={str(db_error)}"
+                    f"Failed to fetch data from URL {url}: "
+                    f"page error={str(page_error)}, db error={str(db_error)}"
                 )
                 raise ValueError(
                     f"Could not fetch data from URL as page or database: {url}"
@@ -169,20 +170,28 @@ class NotionMCPClient:
         # ページ情報を取得
         page_response = await self._call_mcp("GET", f"/pages/{page_id}")
 
-        # TODO: レスポンスをNotionPageモデルに変換
-        # page = NotionPage(**page_response)
+        # レスポンスをNotionPageモデルに変換
+        try:
+            page = NotionPage(**page_response) if page_response else None
+        except (TypeError, ValueError) as e:
+            self.logger.warning(f"Failed to convert page response to model: {str(e)}")
+            page = page_response
 
         # 子ブロックを取得
         blocks_response = await self._call_mcp("GET", f"/blocks/{page_id}/children")
 
-        # TODO: ブロックリストをNotionBlockモデルに変換
-        # blocks = [NotionBlock(**block) for block in blocks_response.get('results', [])]
+        # ブロックリストをNotionBlockモデルに変換
+        blocks = []
+        for block_data in blocks_response.get("results", []):
+            try:
+                blocks.append(NotionBlock(**block_data))
+            except (TypeError, ValueError) as e:
+                self.logger.warning(
+                    f"Failed to convert block to model: {str(e)}, using raw data"
+                )
+                blocks.append(block_data)
 
-        return {
-            "type": "page",
-            "data": page_response,  # 本来はpageモデル
-            "blocks": blocks_response.get("results", []),  # 本来はblocksモデルリスト
-        }
+        return {"type": "page", "data": page, "blocks": blocks}
 
     async def _fetch_database_with_rows(self, database_id: str) -> Dict[str, Any]:
         """データベースとその行を取得（内部メソッド）
@@ -196,8 +205,16 @@ class NotionMCPClient:
         # データベース情報を取得
         database_response = await self._call_mcp("GET", f"/databases/{database_id}")
 
-        # TODO: レスポンスをNotionDatabaseモデルに変換
-        # database = NotionDatabase(**database_response)
+        # レスポンスをNotionDatabaseモデルに変換
+        try:
+            database = (
+                NotionDatabase(**database_response) if database_response else None
+            )
+        except (TypeError, ValueError) as e:
+            self.logger.warning(
+                f"Failed to convert database response to model: {str(e)}"
+            )
+            database = database_response
 
         # データベースの行（ページ）を取得
         rows_response = await self._call_mcp(
@@ -206,14 +223,18 @@ class NotionMCPClient:
             data={"page_size": 100},  # 最大100件取得
         )
 
-        # TODO: 行リストをNotionPageモデルに変換
-        # rows = [NotionPage(**row) for row in rows_response.get('results', [])]
+        # 行リストをNotionPageモデルに変換
+        rows = []
+        for row_data in rows_response.get("results", []):
+            try:
+                rows.append(NotionPage(**row_data))
+            except (TypeError, ValueError) as e:
+                self.logger.warning(
+                    f"Failed to convert row to model: {str(e)}, using raw data"
+                )
+                rows.append(row_data)
 
-        return {
-            "type": "database",
-            "data": database_response,  # 本来はdatabaseモデル
-            "rows": rows_response.get("results", []),  # 本来はpageモデルリスト
-        }
+        return {"type": "database", "data": database, "rows": rows}
 
     async def get_page(self, page_id: str) -> NotionPage:
         """ページ情報を取得
@@ -229,17 +250,33 @@ class NotionMCPClient:
         """
         self.logger.info(f"Getting Notion page: {page_id}")
 
-        await self._call_mcp("GET", f"/pages/{page_id}")
+        response = await self._call_mcp("GET", f"/pages/{page_id}")
 
-        # TODO: レスポンスをNotionPageモデルに変換
-        page = NotionPage(
-            id=page_id,
-            created_time="2023-01-01T00:00:00.000Z",
-            last_edited_time="2023-01-01T00:00:00.000Z",
-            properties={},
-            parent={},
-            url=f"https://notion.so/{page_id}",
-        )  # プレースホルダー
+        # レスポンスをNotionPageモデルに変換
+        try:
+            page = NotionPage(**response) if response else None
+            if not page:
+                # プレースホルダー（空レスポンスの場合）
+                page = NotionPage(
+                    id=page_id,
+                    created_time="2023-01-01T00:00:00.000Z",
+                    last_edited_time="2023-01-01T00:00:00.000Z",
+                    properties={},
+                    parent={},
+                    url=f"https://notion.so/{page_id}",
+                )
+        except (TypeError, ValueError) as e:
+            self.logger.warning(
+                f"Failed to convert page response to model: {str(e)}, using placeholder"
+            )
+            page = NotionPage(
+                id=page_id,
+                created_time="2023-01-01T00:00:00.000Z",
+                last_edited_time="2023-01-01T00:00:00.000Z",
+                properties={},
+                parent={},
+                url=f"https://notion.so/{page_id}",
+            )
 
         self.logger.info(f"Retrieved Notion page: {page_id}")
         return page
@@ -258,10 +295,17 @@ class NotionMCPClient:
         """
         self.logger.info(f"Getting blocks for: {block_id}")
 
-        await self._call_mcp("GET", f"/blocks/{block_id}/children")
+        response = await self._call_mcp("GET", f"/blocks/{block_id}/children")
 
-        # TODO: レスポンスをNotionBlockモデルに変換
-        blocks = []  # プレースホルダー
+        # レスポンスをNotionBlockモデルに変換
+        blocks = []
+        for block_data in response.get("results", []):
+            try:
+                blocks.append(NotionBlock(**block_data))
+            except (TypeError, ValueError) as e:
+                self.logger.warning(
+                    f"Failed to convert block to model: {str(e)}, skipping"
+                )
 
         self.logger.info(f"Retrieved {len(blocks)} blocks for {block_id}")
         return blocks
@@ -280,18 +324,35 @@ class NotionMCPClient:
         """
         self.logger.info(f"Getting Notion database: {database_id}")
 
-        await self._call_mcp("GET", f"/databases/{database_id}")
+        response = await self._call_mcp("GET", f"/databases/{database_id}")
 
-        # TODO: レスポンスをNotionDatabaseモデルに変換
-        database = NotionDatabase(
-            id=database_id,
-            created_time="2023-01-01T00:00:00.000Z",
-            last_edited_time="2023-01-01T00:00:00.000Z",
-            title=[],
-            properties={},
-            parent={},
-            url=f"https://notion.so/{database_id}",
-        )  # プレースホルダー
+        # レスポンスをNotionDatabaseモデルに変換
+        try:
+            database = NotionDatabase(**response) if response else None
+            if not database:
+                # プレースホルダー（空レスポンスの場合）
+                database = NotionDatabase(
+                    id=database_id,
+                    created_time="2023-01-01T00:00:00.000Z",
+                    last_edited_time="2023-01-01T00:00:00.000Z",
+                    title=[],
+                    properties={},
+                    parent={},
+                    url=f"https://notion.so/{database_id}",
+                )
+        except (TypeError, ValueError) as e:
+            self.logger.warning(
+                f"Failed to convert database response to model: {str(e)}, using placeholder"
+            )
+            database = NotionDatabase(
+                id=database_id,
+                created_time="2023-01-01T00:00:00.000Z",
+                last_edited_time="2023-01-01T00:00:00.000Z",
+                title=[],
+                properties={},
+                parent={},
+                url=f"https://notion.so/{database_id}",
+            )
 
         self.logger.info(f"Retrieved Notion database: {database_id}")
         return database
@@ -333,8 +394,15 @@ class NotionMCPClient:
             "POST", f"/databases/{database_id}/query", data=query_data
         )
 
-        # TODO: レスポンスをNotionPageモデルに変換
-        pages = []  # プレースホルダー
+        # レスポンスをNotionPageモデルに変換
+        pages = []
+        for page_data in response.get("results", []):
+            try:
+                pages.append(NotionPage(**page_data))
+            except (TypeError, ValueError) as e:
+                self.logger.warning(
+                    f"Failed to convert page to model: {str(e)}, skipping"
+                )
 
         self.logger.info(f"Retrieved {len(pages)} rows from database {database_id}")
         return pages
@@ -363,7 +431,10 @@ class NotionMCPClient:
             id_str = match.group(1) or match.group(2)
             if "-" not in id_str:
                 # 32文字をUUID形式に変換: 8-4-4-4-12
-                id_str = f"{id_str[0:8]}-{id_str[8:12]}-{id_str[12:16]}-{id_str[16:20]}-{id_str[20:32]}"
+                id_str = (
+                    f"{id_str[0:8]}-{id_str[8:12]}-{id_str[12:16]}-"
+                    f"{id_str[16:20]}-{id_str[20:32]}"
+                )
             return id_str
 
         self.logger.warning(f"Could not extract ID from URL: {url}")

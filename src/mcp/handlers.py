@@ -114,7 +114,11 @@ def _task_to_summary(task: Task) -> TaskSummary:
     if task.category:
         # CategoryEnumの場合は.valueで日本語を取得
         # (CategoryEnumはstr, Enumを継承しているが、strだと"CategoryEnum.X"になる)
-        category_str = task.category.value if hasattr(task.category, 'value') else str(task.category)
+        category_str = (
+            task.category.value
+            if hasattr(task.category, "value")
+            else str(task.category)
+        )
     else:
         category_str = "未分類"
 
